@@ -1,0 +1,6 @@
+{
+  "name": "Moldes de Vestidos da Ana",
+  "description": "Mais de 50 moldes de vestidos femininos e evangélicos com medidas reais, do PP ao plus size. Envio imediato no WhatsApp e e-mail.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
