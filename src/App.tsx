@@ -114,12 +114,6 @@ const DEPOIMENTOS = [
 
 const FAQS: FaqItem[] = [
   {
-    question: 'Como eu recebo? Chega no WhatsApp?',
-    answer:
-      'Chega sim, amiga! 💗 Assim que o pagamento é confirmado, você recebe tudo na hora no seu WhatsApp e no seu e-mail. Os moldes são em PDF: você abre no celular ou no computador e já pode usar.',
-    featured: true,
-  },
-  {
     question: 'Preciso ter impressora?',
     answer:
       'Não precisa, querida! Se não tiver impressora em casa, é só levar o arquivo na papelaria e pedir pra imprimir em folha A4, tamanho real. No “Comece aqui” a Ana mostra direitinho como juntar as folhas.',
@@ -185,8 +179,14 @@ function appendCurrentSearch(baseUrl: string): string {
 
 export default function App() {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLElement>(null);
   const [countdownSeconds, setCountdownSeconds] = useState(15 * 60);
   const [modalOpen, setModalOpen] = useState(false);
+  const [videoActivated, setVideoActivated] = useState(false);
+  const [videoPaused, setVideoPaused] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(true);
 
   const { todayFormatted, tomorrowFormatted } = useMemo(() => {
     const now = new Date();
@@ -225,6 +225,27 @@ export default function App() {
     return () => window.clearInterval(interval);
   }, [modalOpen]);
 
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          if (!v.paused) {
+            v.pause();
+          }
+        } else if (!videoPaused && !videoEnded) {
+          void v.play().catch(() => {});
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(v);
+    return () => observer.disconnect();
+  }, [videoPaused, videoEnded]);
+
   const openUpsellModal = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const dlg = dialogRef.current;
     if (dlg && typeof dlg.showModal === 'function') {
@@ -242,6 +263,55 @@ export default function App() {
       dlg.close();
     }
     setModalOpen(false);
+  };
+
+  const handleVideoClick = () => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    if (!videoActivated) {
+      v.currentTime = 0;
+      v.muted = false;
+      v.loop = false;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = 'scaleX(0)';
+      }
+      setVideoActivated(true);
+      setVideoMuted(false);
+      setVideoEnded(false);
+      setVideoPaused(false);
+      void v.play();
+      return;
+    }
+
+    if (videoEnded) {
+      v.currentTime = 0;
+      v.muted = false;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = 'scaleX(0)';
+      }
+      setVideoMuted(false);
+      setVideoEnded(false);
+      setVideoPaused(false);
+      void v.play();
+      return;
+    }
+
+    if (v.paused) {
+      setVideoPaused(false);
+      void v.play();
+    } else {
+      v.pause();
+      setVideoPaused(true);
+    }
+  };
+
+  const handleToggleMute = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setVideoMuted(v.muted);
   };
 
   const formattedTimer = `${String(Math.floor(countdownSeconds / 60)).padStart(2, '0')}:${String(
@@ -273,18 +343,32 @@ export default function App() {
               d="M12 12c-2-2.8-3.5-4-5.2-4a4 4 0 0 0 0 8c1.7 0 3.2-1.2 5.2-4s3.5-4 5.2-4a4 4 0 0 1 0 8c-1.7 0-3.2-1.2-5.2-4Z"
             />
           </symbol>
+          <symbol id="ico-gift" viewBox="0 0 36 36">
+            <path
+              fill="#FDD888"
+              d="M33 31c0 2.2-1.8 4-4 4H7c-2.2 0-4-1.8-4-4V14c0-2.2 1.8-4 4-4h22c2.2 0 4 1.8 4 4v17z"
+            />
+            <path
+              fill="#FDD888"
+              d="M36 11c0 2.2-1.8 4-4 4H4c-2.2 0-4-1.8-4-4s1.8-4 4-4h28c2.2 0 4 1.8 4 4z"
+            />
+            <path fill="#FCAB40" d="M3 15h30v2H3z" />
+            <path
+              fill="#DA2F47"
+              d="M19 3h-2c-1.657 0-3 1.343-3 3v29h8V6c0-1.656-1.343-3-3-3z"
+            />
+            <path
+              fill="#DA2F47"
+              d="M16 7c1.1 0 1.263-.516.361-1.147L9.639 1.147c-.902-.631-2.085-.366-2.631.589L4.992 5.264C4.446 6.219 4.9 7 6 7h10zm4 0c-1.1 0-1.263-.516-.361-1.147l6.723-4.706c.901-.631 2.085-.366 2.631.589l2.016 3.527C31.554 6.219 31.1 7 30 7H20z"
+            />
+          </symbol>
         </defs>
       </svg>
 
       <div className="rank-bar" role="note">
-        <img
-          className="rank-ico tw"
-          src="/media/emoji/1f381.svg"
-          width="20"
-          height="20"
-          alt=""
-          aria-hidden="true"
-        />
+        <svg className="rank-ico tw" aria-hidden="true">
+          <use href="#ico-gift" />
+        </svg>
         <span>
           A promoção dessa página acaba no dia <b>{todayFormatted}</b>
         </span>
@@ -315,22 +399,137 @@ export default function App() {
           </p>
           <figure className="hero-visual">
             <div className="hero-glow" aria-hidden="true" />
-            <picture className="hero-picture">
-              <source
-                srcSet="/media/hero-custom-480.webp 480w, /media/hero-custom-800.webp 760w, /media/hero-custom-1200.webp 1200w"
-                sizes="(min-width: 760px) 760px, 100vw"
-                type="image/webp"
+            <div
+              className="hero-video-wrap"
+              onClick={handleVideoClick}
+              role="button"
+              tabIndex={0}
+              aria-label={
+                !videoActivated
+                  ? 'Ativar som e assistir ao vídeo'
+                  : videoPaused
+                    ? 'Continuar vídeo'
+                    : 'Pausar vídeo'
+              }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleVideoClick();
+                }
+              }}
+            >
+              <video
+                ref={videoRef}
+                className="hero-video"
+                src="/media/hero-vsl.mp4"
+                poster="/media/hero-vsl-poster.webp"
+                width="854"
+                height="480"
+                autoPlay
+                muted
+                loop={!videoActivated}
+                playsInline
+                preload="metadata"
+                onTimeUpdate={() => {
+                  const v = videoRef.current;
+                  const bar = progressBarRef.current;
+                  if (v && bar && v.duration > 0) {
+                    bar.style.transform = `scaleX(${v.currentTime / v.duration})`;
+                  }
+                }}
+                onEnded={() => {
+                  if (videoActivated) {
+                    if (progressBarRef.current) {
+                      progressBarRef.current.style.transform = 'scaleX(1)';
+                    }
+                    setVideoEnded(true);
+                    setVideoPaused(true);
+                  }
+                }}
               />
-              <img
-                src="/media/hero-custom-800.webp"
-                width="1200"
-                height="800"
-                alt="Ana segurando um vestido evangélico rosé no cabide com moldes de vestidos, linhas e tecidos na mesa"
-                fetchPriority="high"
-                loading="eager"
-                decoding="async"
-              />
-            </picture>
+
+              {!videoActivated && (
+                <button
+                  type="button"
+                  className="hv-sound-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleVideoClick();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                  </svg>
+                  <strong>Seu vídeo já começou</strong>
+                  <span>Clique para ativar o som</span>
+                </button>
+              )}
+
+              {videoActivated && !videoEnded && (
+                <button
+                  type="button"
+                  className="hv-sound-badge"
+                  onClick={handleToggleMute}
+                  aria-label={videoMuted ? 'Ativar som' : 'Silenciar vídeo'}
+                >
+                  {videoMuted ? (
+                    <>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z" />
+                      </svg>
+                      Sem som
+                    </>
+                  ) : (
+                    <>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                      </svg>
+                      Som ligado
+                    </>
+                  )}
+                </button>
+              )}
+
+              {videoActivated && videoPaused && !videoEnded && (
+                <button
+                  type="button"
+                  className="hv-play-btn"
+                  aria-label="Continuar vídeo"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleVideoClick();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+              )}
+
+              {videoEnded && (
+                <div className="hv-ended">
+                  <button
+                    type="button"
+                    className="hv-replay-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleVideoClick();
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                    </svg>
+                    Assistir novamente
+                  </button>
+                </div>
+              )}
+
+              {videoActivated && (
+                <div className="hv-progress" aria-hidden="true">
+                  <i ref={progressBarRef} style={{ transform: 'scaleX(0)' }} />
+                </div>
+              )}
+            </div>
           </figure>
         </div>
         <div
@@ -361,8 +560,8 @@ export default function App() {
                 <li key={`a1-${idx}`}>
                   <img
                     src={item.img}
-                    width="500"
-                    height="750"
+                    width="400"
+                    height="600"
                     loading="lazy"
                     decoding="async"
                     alt={item.alt}
@@ -374,8 +573,8 @@ export default function App() {
                 <li key={`a2-${idx}`} aria-hidden="true">
                   <img
                     src={item.img}
-                    width="500"
-                    height="750"
+                    width="400"
+                    height="600"
                     loading="lazy"
                     decoding="async"
                     alt=""
@@ -391,8 +590,8 @@ export default function App() {
                 <li key={`b1-${idx}`}>
                   <img
                     src={item.img}
-                    width="500"
-                    height="750"
+                    width="400"
+                    height="600"
                     loading="lazy"
                     decoding="async"
                     alt={item.alt}
@@ -404,8 +603,8 @@ export default function App() {
                 <li key={`b2-${idx}`} aria-hidden="true">
                   <img
                     src={item.img}
-                    width="500"
-                    height="750"
+                    width="400"
+                    height="600"
                     loading="lazy"
                     decoding="async"
                     alt=""
@@ -441,10 +640,10 @@ export default function App() {
             <img
               className="deliver-img"
               src="/media/produto-440.webp"
-              srcSet="/media/produto-440.webp 440w, /media/produto-800.webp 760w"
+              srcSet="/media/produto-440.webp 400w, /media/produto-800.webp 680w"
               sizes="(min-width: 480px) 400px, 90vw"
-              width="440"
-              height="440"
+              width="400"
+              height="400"
               loading="lazy"
               decoding="async"
               alt="Pacote Moldes de Vestidos da Ana no tablet e no celular, com moldes impressos"
@@ -452,74 +651,88 @@ export default function App() {
           </div>
           <ul className="rc-grid">
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-custom-440.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Plataforma Moldes de Vestidos Evangélicos com mais de 50 moldes"
+              />
               <span>
                 <strong>Mais de 50 moldes de vestidos</strong> femininos e evangélicos
               </span>
             </li>
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-icon-3.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Molde peça por peça: frente, costas, manga e saia com as medidas"
+              />
               <span>
                 <strong>Molde peça por peça</strong>: frente, costas, manga e saia com as medidas
               </span>
             </li>
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-icon-1.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Do PP ao plus size com a grade de tamanhos de cada modelo"
+              />
               <span>
                 <strong>Do PP ao plus size</strong>, com a grade de tamanhos de cada modelo
               </span>
             </li>
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-icon-4.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Vestidos para culto, congresso, festa e dia a dia"
+              />
               <span>
                 Vestidos pra <strong>culto, congresso, festa e dia a dia</strong>: longo, midi,
                 godê, três Marias e chemise
               </span>
             </li>
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-icon-2.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Foto do vestido pronto junto de cada molde"
+              />
               <span>
                 <strong>Foto do vestido pronto</strong> junto de cada molde
               </span>
             </li>
             <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
+              <img
+                className="rc-thumb"
+                src="/media/recebe-icon-5.webp"
+                width="45"
+                height="45"
+                loading="lazy"
+                decoding="async"
+                alt="Guia Comece aqui mostrando como montar o molde"
+              />
               <span>
                 <strong>Guia “Comece aqui”</strong> mostrando como montar o molde
-              </span>
-            </li>
-            <li className="rc">
-              <span className="rc-ico">
-                <svg className="ico" aria-hidden="true">
-                  <use href="#ico-check" />
-                </svg>
-              </span>
-              <span>
-                <strong>Acesso imediato</strong> no WhatsApp e no e-mail
               </span>
             </li>
             <li className="rc rc-vip">
@@ -535,59 +748,34 @@ export default function App() {
           </ul>
           <div className="rc-bonus">
             <p className="rc-bonus-tag">
-              <img
-                className="ico tw"
-                src="/media/emoji/1f381.svg"
-                width="20"
-                height="20"
-                alt=""
-                aria-hidden="true"
-              />
+              <svg className="ico tw" aria-hidden="true">
+                <use href="#ico-gift" />
+              </svg>
               DE PRESENTE · 4 BÔNUS
             </p>
             <ul>
               <li>
-                <img
-                  className="ico tw"
-                  src="/media/emoji/1f381.svg"
-                  width="20"
-                  height="20"
-                  alt=""
-                  aria-hidden="true"
-                />
+                <svg className="ico tw" aria-hidden="true">
+                  <use href="#ico-gift" />
+                </svg>
                 <span>Tabela de Medidas do PP ao Plus Size</span>
               </li>
               <li>
-                <img
-                  className="ico tw"
-                  src="/media/emoji/1f381.svg"
-                  width="20"
-                  height="20"
-                  alt=""
-                  aria-hidden="true"
-                />
+                <svg className="ico tw" aria-hidden="true">
+                  <use href="#ico-gift" />
+                </svg>
                 <span>Guia de Tecidos</span>
               </li>
               <li>
-                <img
-                  className="ico tw"
-                  src="/media/emoji/1f381.svg"
-                  width="20"
-                  height="20"
-                  alt=""
-                  aria-hidden="true"
-                />
+                <svg className="ico tw" aria-hidden="true">
+                  <use href="#ico-gift" />
+                </svg>
                 <span>Molde A4 Sem Erro</span>
               </li>
               <li>
-                <img
-                  className="ico tw"
-                  src="/media/emoji/1f381.svg"
-                  width="20"
-                  height="20"
-                  alt=""
-                  aria-hidden="true"
-                />
+                <svg className="ico tw" aria-hidden="true">
+                  <use href="#ico-gift" />
+                </svg>
                 <span>Quanto Cobrar</span>
               </li>
             </ul>
@@ -661,8 +849,8 @@ export default function App() {
                 <p className="bonus-tag">{bonus.tag}</p>
                 <img
                   src={bonus.img}
-                  width="480"
-                  height="480"
+                  width="360"
+                  height="360"
                   loading="lazy"
                   decoding="async"
                   alt={bonus.title}
@@ -708,8 +896,8 @@ export default function App() {
               <figure className="dep-card" key={dep.src}>
                 <img
                   src={dep.src}
-                  width="620"
-                  height="1102"
+                  width="460"
+                  height="817"
                   loading="lazy"
                   decoding="async"
                   alt={dep.alt}
@@ -804,8 +992,8 @@ export default function App() {
               <img
                 className="plan-full-img"
                 src="/media/plano-completo-img.webp"
-                width="680"
-                height="453"
+                width="560"
+                height="373"
                 loading="lazy"
                 decoding="async"
                 alt="Pacote Completo de Moldes de Vestidos com mais de 50 modelos, medidas reais e acesso vitalício"
@@ -842,47 +1030,27 @@ export default function App() {
                   </span>
                 </li>
                 <li>
-                  <img
-                    className="pl-gift tw"
-                    src="/media/emoji/1f381.svg"
-                    width="20"
-                    height="20"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <svg className="pl-gift tw" aria-hidden="true">
+                    <use href="#ico-gift" />
+                  </svg>
                   <span className="chip">Bônus</span> Tabela de Medidas <s>R$&nbsp;67,00</s>
                 </li>
                 <li>
-                  <img
-                    className="pl-gift tw"
-                    src="/media/emoji/1f381.svg"
-                    width="20"
-                    height="20"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <svg className="pl-gift tw" aria-hidden="true">
+                    <use href="#ico-gift" />
+                  </svg>
                   <span className="chip">Bônus</span> Guia de Tecidos <s>R$&nbsp;47,00</s>
                 </li>
                 <li>
-                  <img
-                    className="pl-gift tw"
-                    src="/media/emoji/1f381.svg"
-                    width="20"
-                    height="20"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <svg className="pl-gift tw" aria-hidden="true">
+                    <use href="#ico-gift" />
+                  </svg>
                   <span className="chip">Bônus</span> Molde A4 Sem Erro <s>R$&nbsp;57,00</s>
                 </li>
                 <li>
-                  <img
-                    className="pl-gift tw"
-                    src="/media/emoji/1f381.svg"
-                    width="20"
-                    height="20"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <svg className="pl-gift tw" aria-hidden="true">
+                    <use href="#ico-gift" />
+                  </svg>
                   <span className="chip">Bônus</span> Quanto Cobrar <s>R$&nbsp;77,00</s>
                 </li>
               </ul>
@@ -914,8 +1082,8 @@ export default function App() {
           <div className="garantia">
             <img
               src="/media/selo-21-dias.webp"
-              width="200"
-              height="200"
+              width="184"
+              height="184"
               loading="lazy"
               decoding="async"
               alt="Selo de garantia de 21 dias"
