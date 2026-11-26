@@ -392,7 +392,7 @@ export default function App() {
         <div className="shell">
           <h1>
             Crie Vestidos Evangélicos Tão Lindos Que as Irmãs Vão Perguntar:{' '}
-            <em>"Foi Você Que Fez?"</em>
+            <em>"Onde Você Comprou?"</em>
           </h1>
           <p className="hero-mesmo">
             MESMO QUE VOCÊ NUNCA TENHA FEITO UMA MODELAGEM NA VIDA!
