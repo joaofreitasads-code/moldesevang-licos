@@ -926,64 +926,12 @@ export default function App() {
           <h2>Escolha a sua opção</h2>
           <p className="lead">Oferta especial e envio imediato</p>
           <div className="plans">
-            <article className="plan plan-basic">
-              <p className="plan-name">Básico</p>
-              <p className="plan-desc">O essencial para começar.</p>
-              <ul className="plan-list">
-                <li>
-                  <svg className="pl-ok" aria-hidden="true">
-                    <use href="#ico-check" />
-                  </svg>
-                  <span>20 moldes de vestidos</span>
-                </li>
-                <li>
-                  <svg className="pl-ok" aria-hidden="true">
-                    <use href="#ico-check" />
-                  </svg>
-                  <span>Medidas reais em cada peça</span>
-                </li>
-                <li>
-                  <svg className="pl-ok" aria-hidden="true">
-                    <use href="#ico-check" />
-                  </svg>
-                  <span>Acesso imediato</span>
-                </li>
-              </ul>
-              <div className="plan-price">
-                <p className="plan-was">
-                  De <s>R$&nbsp;47,00</s> por
-                </p>
-                <p className="plan-now">R$&nbsp;10,90</p>
-                <p className="plan-note">pagamento único à vista</p>
-              </div>
-              <a
-                className="cta cta-ghost btn-checkout"
-                href={checkoutUrls.basico}
-                onClick={openUpsellModal}
-              >
-                Quero o Básico
-              </a>
-              <a className="plan-nudge plan-nudge-92" href="#plano-completo">
-                <span>92% DAS COSTUREIRAS APROVEITAM A OFERTA COMPLETA:</span>
-                <svg className="nudge-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M12 4v15m0 0-6.5-6.5M12 19l6.5-6.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </a>
-            </article>
-
             <article className="plan plan-full" id="plano-completo">
               <p className="plan-badge">
                 <svg className="ico" aria-hidden="true">
                   <use href="#ico-star" />
                 </svg>
-                Mais escolhido
+                Black Friday 40% OFF
               </p>
               <div className="plan-full-head">
                 <p className="plan-name">Completo</p>
@@ -1076,6 +1024,58 @@ export default function App() {
                   A partir de <span>{tomorrowFormatted}</span>, o preço será ajustado.
                 </span>
               </p>
+            </article>
+
+            <article className="plan plan-basic">
+              <p className="plan-name">Básico</p>
+              <p className="plan-desc">O essencial para começar.</p>
+              <ul className="plan-list">
+                <li>
+                  <svg className="pl-ok" aria-hidden="true">
+                    <use href="#ico-check" />
+                  </svg>
+                  <span>20 moldes de vestidos</span>
+                </li>
+                <li>
+                  <svg className="pl-ok" aria-hidden="true">
+                    <use href="#ico-check" />
+                  </svg>
+                  <span>Medidas reais em cada peça</span>
+                </li>
+                <li>
+                  <svg className="pl-ok" aria-hidden="true">
+                    <use href="#ico-check" />
+                  </svg>
+                  <span>Acesso imediato</span>
+                </li>
+              </ul>
+              <div className="plan-price">
+                <p className="plan-was">
+                  De <s>R$&nbsp;47,00</s> por
+                </p>
+                <p className="plan-now">R$&nbsp;10,90</p>
+                <p className="plan-note">pagamento único à vista</p>
+              </div>
+              <a
+                className="cta cta-ghost btn-checkout"
+                href={checkoutUrls.basico}
+                onClick={openUpsellModal}
+              >
+                Quero o Básico
+              </a>
+              <a className="plan-nudge plan-nudge-92" href="#plano-completo">
+                <span>92% DAS COSTUREIRAS APROVEITAM A OFERTA COMPLETA:</span>
+                <svg className="nudge-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 4v15m0 0-6.5-6.5M12 19l6.5-6.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </a>
             </article>
           </div>
 
