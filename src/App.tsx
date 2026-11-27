@@ -145,21 +145,6 @@ const FAQS: FaqItem[] = [
   },
 ];
 
-const MONTHS_PT = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
-];
-
 function appendCurrentSearch(baseUrl: string): string {
   if (typeof window === 'undefined' || !window.location.search) {
     return baseUrl;
@@ -188,19 +173,12 @@ export default function App() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [videoMuted, setVideoMuted] = useState(true);
 
-  const { todayFormatted, tomorrowFormatted } = useMemo(() => {
+  const todayFormatted = useMemo(() => {
     const now = new Date();
     const dd = String(now.getDate()).padStart(2, '0');
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const yyyy = now.getFullYear();
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    return {
-      todayFormatted: `${dd}/${mm}/${yyyy}`,
-      tomorrowFormatted: `${tomorrow.getDate()} de ${MONTHS_PT[tomorrow.getMonth()]}`,
-    };
+    return `${dd}/${mm}/${yyyy}`;
   }, []);
 
   const checkoutUrls = useMemo(
@@ -952,7 +930,7 @@ export default function App() {
                     <use href="#ico-check" />
                   </svg>
                   <span>
-                    <strong>Mais de 50 moldes</strong> de vestidos
+                    <strong>+70 moldes de vestidos</strong>
                   </span>
                 </li>
                 <li>
@@ -1018,12 +996,6 @@ export default function App() {
               >
                 Quero o Completo
               </a>
-              <p className="plan-ultimo">
-                <b>Último dia com desconto no pacote completo</b>
-                <span>
-                  A partir de <span>{tomorrowFormatted}</span>, o preço será ajustado.
-                </span>
-              </p>
             </article>
 
             <article className="plan plan-basic">
